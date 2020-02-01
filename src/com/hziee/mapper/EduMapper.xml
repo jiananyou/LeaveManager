@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hziee.mapper.EduMapper">
+    <select id="findEduById" parameterType="String" resultType="Edu">
+        select * from edu where edu_id = #{edu_id}
+    </select>
+
+    <update id="updatePwdById" parameterType="String">
+        update edu set pwd = #{pwd} where edu_id = #{id}
+    </update>
+
+    <update id="updateVacate" parameterType="String">
+        update vacate set step = 3 where vacate_id = #{vacate_id}
+    </update>
+
+    <update id="updateAcceptEduVacate" parameterType="String">
+        update edu_vacate set status = 1 where vacate_id = #{vacate_id}
+    </update>
+
+    <update id="updateAcceptStudentVacate" parameterType="String">
+        update student_vacate set status = 1 where vacate_id = #{vacate_id}
+    </update>
+
+    <select id="findCourseListByVacateId" parameterType="String" resultType="String">
+        select course_list from vacate where vacate_id = #{vacate_id}
+    </select>
+
+    <select id="findTeacherIdByCourseList" parameterType="List" resultType="String">
+        select teacher_id from course where name in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <insert id="addTeacherVacate" parameterType="String">
+        insert into teacher_vacate (teacher_id,vacate_id)
+        values (#{teacher_id},#{vacate_id})
+    </insert>
+
+    <update id="updateRefuseStudentVacate" parameterType="String">
+        update student_vacate set status = -1 where vacate_id = #{vacate_id}
+    </update>
+
+    <update id="updateRefuseEduVacate" parameterType="String">
+        update edu_vacate set status = -1 where vacate_id = #{vacate_id}
+    </update>
+
+    <select id="findCheckingVacate" parameterType="String" resultType="Vacate">
+        select edu_vacate.vacate_id,stu_id,stu_name,term,submit_time,start_time,end_time,period,type,result,course_list,step,status
+        from edu_vacate join vacate on edu_vacate.vacate_id = vacate.vacate_id
+        where status = 0 and edu_id = #{edu_id}
+    </select>
+
+    <select id="findPassVacate" parameterType="String" resultType="Vacate">
+        select edu_vacate.vacate_id,stu_id,stu_name,term,submit_time,start_time,end_time,period,type,result,course_list,step,status
+        from edu_vacate join vacate on edu_vacate.vacate_id = vacate.vacate_id
+        where status = 1 and edu_id = #{edu_id}
+    </select>
+
+    <select id="findFailVacate" parameterType="String" resultType="Vacate">
+        select edu_vacate.vacate_id,stu_id,stu_name,term,submit_time,start_time,end_time,period,type,result,course_list,step,status
+        from edu_vacate join vacate on edu_vacate.vacate_id = vacate.vacate_id
+        where status = -1 and edu_id = #{edu_id}
+    </select>
+
+    <select id="findByTime" parameterType="Map" resultType="Vacate">
+        select edu_vacate.vacate_id,stu_id,stu_name,term,submit_time,start_time,end_time,period,type,result,course_list,step,status
+        from edu_vacate join vacate on edu_vacate.vacate_id = vacate.vacate_id
+        where edu_id = #{edu_id} and start_time &gt;= #{start_time} and end_time &lt;= #{end_time}
+    </select>
+
+    <select id="findByTerm" parameterType="Map" resultType="Vacate">
+        select edu_vacate.vacate_id,stu_id,stu_name,term,submit_time,start_time,end_time,period,type,result,course_list,step,status
+        from edu_vacate join vacate on edu_vacate.vacate_id = vacate.vacate_id
+        where edu_id = #{edu_id} and term = #{term}
+    </select>
+
+    <select id="findByType" parameterType="Map" resultType="Vacate">
+        select edu_vacate.vacate_id,stu_id,stu_name,term,submit_time,start_time,end_time,period,type,result,course_list,step,status
+        from edu_vacate join vacate on edu_vacate.vacate_id = vacate.vacate_id
+        where edu_id = #{edu_id} and type = #{type}
+    </select>
+
+    <select id="findVacate" parameterType="Map" resultType="Vacate">
+        select vacate.vacate_id,stu_id,stu_name,term,submit_time,start_time,end_time,period,type,result,course_list,step,status
+        from edu_vacate join vacate on edu_vacate.vacate_id = vacate.vacate_id
+        <where>
+            <if test="edu_id != null and edu_id != ''">
+                and edu_vacate.edu_id = #{edu_id}
+            </if>
+            <if test="start_time != null and start_time != ''">
+                and start_time &gt;= #{start_time}
+            </if>
+            <if test="end_time != null and end_time != ''">
+                and end_time &lt;= #{end_time}
+            </if>
+            <if test="term != null and term != ''">
+                and term = #{term}
+            </if>
+            <if test="type != null and type != ''">
+                and type = #{type}
+            </if>
+        </where>
+        limit #{start},#{size}
+    </select>
+
+    <select id="findCount" parameterType="Map" resultType="Integer">
+        select count(*)
+        from edu_vacate join vacate on edu_vacate.vacate_id = vacate.vacate_id
+        <where>
+            <if test="edu_id != null and edu_id != ''">
+                and edu_vacate.edu_id = #{edu_id}
+            </if>
+            <if test="start_time != null and start_time != ''">
+                and start_time &gt;= #{start_time}
+            </if>
+            <if test="end_time != null and end_time != ''">
+                and end_time &lt;= #{end_time}
+            </if>
+            <if test="term != null and term != ''">
+                and term = #{term}
+            </if>
+            <if test="type != null and type != ''">
+                and type = #{type}
+            </if>
+        </where>
+    </select>
+
+    <select id="findIll" resultType="Integer">
+        select count(id) from edu_vacate join vacate where edu_vacate.vacate_id = vacate.vacate_id and type = '病假'
+    </select>
+
+    <select id="findThing" resultType="Integer">
+        select count(id) from edu_vacate join vacate where edu_vacate.vacate_id = vacate.vacate_id and type = '事假'
+    </select>
+
+    <select id="findWork" resultType="Integer">
+        select count(id) from edu_vacate join vacate where edu_vacate.vacate_id = vacate.vacate_id and type = '学院学生辅助工作'
+    </select>
+
+    <select id="findOthers" resultType="Integer">
+        select count(id) from edu_vacate join vacate where edu_vacate.vacate_id = vacate.vacate_id and type = '其他'
+    </select>
+
+    <insert id="addTutor" parameterType="Tutor">
+        insert into tutor (tutor_id,name,pwd,edu_id)
+        values (#{tutor_id},#{name},#{pwd},#{edu_id})
+    </insert>
+</mapper>
